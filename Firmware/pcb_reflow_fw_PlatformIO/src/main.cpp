@@ -18,6 +18,7 @@
 #include <EEPROM.h>
 #include <OneWire.h>
 #include <SPI.h>
+#include <SimpleKalmanFilter.h>
 
 // Version Definitions
 static const PROGMEM float hw = 0.9;
