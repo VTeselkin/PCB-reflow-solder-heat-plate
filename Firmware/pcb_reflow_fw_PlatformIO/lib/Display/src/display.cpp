@@ -9,7 +9,7 @@ void Display::clearMainMenu()
   led.drawRoundRect(0, 0, 83, 32, 2, SSD1306_WHITE);
 }
 
-void Display::getResistanceFromUser(void (*setResistance)(float), Controll controll)
+void Display::getResistanceFromUser(Preference preference, Controll controll)
 {
   float resistance = 1.88;
   while (1)
@@ -33,7 +33,7 @@ void Display::getResistanceFromUser(void (*setResistance)(float), Controll contr
     }
     else if (button == BUTTONS_BOTH_PRESS)
     {
-      setResistance(resistance);
+      preference.setResistance(resistance);
       return;
     }
     resistance = constrain(resistance, 0, MAX_RESISTANCE);

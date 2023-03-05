@@ -16,16 +16,17 @@
 #include <display.h>
 #include <controll.h>
 #include <helpers.h>
+#include <debug.h>
 #include <DallasTemperature.h>
-#include <EEPROM.h>
+#include <preference.h>
 #include <OneWire.h>
 #include <SPI.h>
 #include <SimpleKalmanFilter.h>
 
-Display display = Display();
+Display display;
 Controll controll;
-
-
+Preference preference;
+Debug debug;
 
 // Pin Definitions
 #define MOSFET_PIN PIN_PC3
@@ -57,13 +58,6 @@ float bed_resistance = 1.88;
 #define ANALOG_APPROXIMATION_SCALAR 1.612
 #define ANALOG_APPROXIMATION_OFFSET -20.517
 
-// EEPROM storage locations
-#define CRC_ADDR 0
-#define FIRSTTIME_BOOT_ADDR 4
-#define TEMP_INDEX_ADDR 5
-#define RESISTANCE_INDEX_ADDR 6
-#define DIGITAL_TEMP_ID_ADDR 10
-
 // Voltage Measurement Info
 #define VOLTAGE_REFERENCE 1.5
 
@@ -83,55 +77,6 @@ DallasTemperature sensors(&oneWire);
 int sensor_count = 0;
 DeviceAddress temp_addresses[3];
 
-#define DEBUG
-
-#ifdef DEBUG
-#define debugprint(x) Serial.print(x);
-#define debugprintln(x) Serial.println(x);
-#else
-#define debugprint(x)
-#define debugprintln(x)
-#endif
-
-
-void setCRC(uint32_t new_crc) { EEPROM.put(CRC_ADDR, new_crc); }
-
-uint32_t eepromCRC(void)
-{
-  static const uint32_t crc_table[16] = {
-      0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac, 0x76dc4190, 0x6b6b51f4,
-      0x4db26158, 0x5005713c, 0xedb88320, 0xf00f9344, 0xd6d6a3e8, 0xcb61b38c,
-      0x9b64c2b0, 0x86d3d2d4, 0xa00ae278, 0xbdbdf21c};
-  uint32_t crc = ~0L;
-  // Skip first 4 bytes of EEPROM as thats where we store the CRC
-  for (int index = 4; index < EEPROM.length(); ++index)
-  {
-    crc = crc_table[(crc ^ EEPROM[index]) & 0x0f] ^ (crc >> 4);
-    crc = crc_table[(crc ^ (EEPROM[index] >> 4)) & 0x0f] ^ (crc >> 4);
-    crc = ~crc;
-  }
-
-  return crc;
-}
-
-void updateCRC()
-{
-  uint32_t new_crc = eepromCRC();
-  setCRC(new_crc);
-}
-
-bool validateCRC()
-{
-  uint32_t stored_crc;
-  EEPROM.get(CRC_ADDR, stored_crc);
-  uint32_t calculated_crc = eepromCRC();
-  debugprint("got CRCs, stored: ");
-  debugprint(stored_crc);
-  debugprint(", calculated: ");
-  debugprintln(calculated_crc);
-  return stored_crc == calculated_crc;
-}
-
 inline void setupSensors()
 {
   sensors.begin();
@@ -147,44 +92,6 @@ inline void setupSensors()
 inline void setFastPwm() { analogWriteFrequency(64); }
 
 inline void setVREF() { analogReference(INTERNAL1V5); }
-
-inline bool isFirstBoot()
-{
-  uint8_t first_boot = EEPROM.read(FIRSTTIME_BOOT_ADDR);
-  debugprint("Got first boot flag: ");
-  debugprintln(first_boot);
-  return first_boot != 1;
-}
-
-inline void setFirstBoot()
-{
-  EEPROM.write(FIRSTTIME_BOOT_ADDR, 1);
-  updateCRC();
-}
-
-inline float getResistance()
-{
-  float f;
-  return EEPROM.get(RESISTANCE_INDEX_ADDR, f);
-  return f;
-}
-
-inline void setResistance(float resistance)
-{
-  EEPROM.put(RESISTANCE_INDEX_ADDR, resistance);
-  updateCRC();
-}
-
-inline void setMaxTempIndex(int index)
-{
-  EEPROM.update(TEMP_INDEX_ADDR, index);
-  updateCRC();
-}
-
-inline int getMaxTempIndex(void)
-{
-  return EEPROM.read(TEMP_INDEX_ADDR) % sizeof(max_temp_array);
-}
 
 float getTemp()
 {
@@ -238,8 +145,6 @@ float getVolts()
   vin = (vin / 0.090981) + 0.3;
   return vin;
 }
-
-
 
 void stepPID(float target_temp, float current_temp, float last_temp, float dt,
              int min_pwm)
@@ -440,7 +345,7 @@ inline void mainMenu()
       }
       else
       {
-        display.coolDown(getTemp,controll);
+        display.coolDown(getTemp, controll);
         display.completed(controll);
       }
       cur_state = MENU_IDLE;
@@ -452,7 +357,7 @@ inline void mainMenu()
       {
         max_temp_index++;
         debugprintln("incrementing max temp");
-        setMaxTempIndex(max_temp_index);
+        preference.setMaxTempIndex(max_temp_index);
       }
       cur_state = MENU_IDLE;
     }
@@ -463,7 +368,7 @@ inline void mainMenu()
       {
         max_temp_index--;
         debugprintln("decrementing max temp");
-        setMaxTempIndex(max_temp_index);
+        preference.setMaxTempIndex(max_temp_index);
       }
       cur_state = MENU_IDLE;
     }
@@ -484,10 +389,10 @@ inline void doSetup()
   // TODO(HEIDT) show an info screen if we're doing firstime setup or if memory
   // is corrupted
 
-  display.getResistanceFromUser(setResistance, controll);
+  display.getResistanceFromUser(preference, controll);
   // TODO(HEIDT) do a temperature module setup here
 
-  setFirstBoot();
+  preference.setFirstBoot();
 }
 // -------------------- Main Logic -----------------------------------
 
@@ -507,8 +412,8 @@ void setup()
   attachInterrupt(DNSW_PIN, controll.dnsw_change_isr, FALLING);
   attachInterrupt(UPSW_PIN, controll.upsw_change_isr, FALLING);
 
-  Serial.begin(9600);
-  
+  debug.setup();
+
   // Enable Fast PWM with no prescaler
   setFastPwm();
   setVREF();
@@ -522,14 +427,14 @@ void setup()
   setupSensors();
 
   debugprintln("Checking first boot");
-  if (isFirstBoot() || !validateCRC())
+  if (preference.isFirstBoot() || !preference.validateCRC())
   {
     doSetup();
   }
 
   // Pull saved values from EEPROM
-  max_temp_index = getMaxTempIndex();
-  bed_resistance = getResistance();
+  max_temp_index = preference.getMaxTempIndex();
+  bed_resistance = preference.getResistance();
 
   debugprintln("Entering main menu");
   // Go to main menu
@@ -540,4 +445,3 @@ void loop()
 {
   // Not used
 }
-

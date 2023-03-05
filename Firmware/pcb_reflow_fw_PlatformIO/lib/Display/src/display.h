@@ -1,6 +1,7 @@
 #pragma once
 #include <Adafruit_SSD1306.h>
 #include <controll.h>
+#include <preference.h>
 #include <helpers.h>
 
 #define MAX_RESISTANCE 10.0
@@ -76,7 +77,7 @@ class Display
 
 public:
     void clearMainMenu();
-    void getResistanceFromUser(void (*setResistance)(float), Controll controll);
+    void getResistanceFromUser(Preference preference, Controll controll);
     void heatAnimate(int &x, int &y, float v, float t, float target);
     void showHeatMenu(byte max_temp);
     void showMainMenuLeft(int &x, int &y);
