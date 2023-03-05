@@ -9,7 +9,7 @@ void Display::clearMainMenu()
   led.drawRoundRect(0, 0, 83, 32, 2, SSD1306_WHITE);
 }
 
-void Display::getResistanceFromUser(Preference preference, Controll controll)
+void Display::getResistanceFromUser(Preference preference, buttons_state_t(*getButtonsState)(void))
 {
   float resistance = 1.88;
   while (1)
@@ -22,7 +22,7 @@ void Display::getResistanceFromUser(Preference preference, Controll controll)
     led.print(F("UP/DN: change"));
     led.setCursor(3, 22);
     led.print(F("BOTH: choose"));
-    buttons_state_t button = controll.getButtonsState();
+    buttons_state_t button = getButtonsState();
     if (button == BUTTONS_UP_PRESS)
     {
       resistance += 0.01;
@@ -44,7 +44,7 @@ void Display::getResistanceFromUser(Preference preference, Controll controll)
   }
 }
 
-void Display::showLogo(void (*doSetup)(void), Controll controll)
+void Display::showLogo(void (*doSetup)(void), buttons_state_t(*getButtonsState)(void))
 {
   unsigned long start_time = millis();
   led.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
@@ -62,9 +62,8 @@ void Display::showLogo(void (*doSetup)(void), Controll controll)
     led.print(F("H/W V"));
     led.print(hw, 1);
     led.display();
-    buttons_state_t cur_button = controll.getButtonsState();
     // If we press both buttons during boot, we'll enter the setup process
-    if (cur_button == BUTTONS_BOTH_PRESS)
+    if (getButtonsState() == BUTTONS_BOTH_PRESS)
     {
       doSetup();
       return;
@@ -95,7 +94,7 @@ void Display::displayProfileRight(int8_t cur_profile)
   led.drawLine(cur_x, cur_y, SCREEN_WIDTH - 2, 30, SSD1306_WHITE);
 }
 
-uint8_t Display::getProfile(Controll controll)
+uint8_t Display::getProfile(buttons_state_t(*getButtonsState)(void))
 {
   uint8_t cur_profile = 0;
   while (1)
@@ -108,7 +107,7 @@ uint8_t Display::getProfile(Controll controll)
     led.print(F(" UP/DN: cycle"));
     led.setCursor(3, 22);
     led.print(F(" BOTH: choose"));
-    buttons_state_t cur_button = controll.getButtonsState();
+    buttons_state_t cur_button = getButtonsState();
     if (cur_button == BUTTONS_BOTH_PRESS)
     {
       clearMainMenu();
@@ -128,14 +127,14 @@ uint8_t Display::getProfile(Controll controll)
   }
 }
 
-void Display::cancelledTimer(Controll controll)
+void Display::cancelledTimer(buttons_state_t(*getButtonsState)(void))
 { // Cancelled via 5 minute Time Limit
   // Initiate Swap Display
   int x = 0;   // Display change counter
   int y = 150; // Display change max (modulused below)
 
   // Wait to return on any button press
-  while (controll.getButtonsState() == BUTTONS_NO_PRESS)
+  while (getButtonsState() == BUTTONS_NO_PRESS)
   {
     // Update Display
     led.clearDisplay();
@@ -248,12 +247,12 @@ void Display::cancelledPB()
   delay(2000);
 }
 
-void Display::coolDown(float (*getTemp)(void), Controll controll)
+void Display::coolDown(float(*getTemp)(void), buttons_state_t(*getButtonsState)(void))
 {
   float t = getTemp(); // Used to store current temperature
 
   // Wait to return on any button press, or TEMP_PIN below threshold
-  while (controll.getButtonsState() == BUTTONS_NO_PRESS && t > 45.00)
+  while (getButtonsState() == BUTTONS_NO_PRESS && t > 45.00)
   {
     led.clearDisplay();
     led.drawRoundRect(22, 0, 84, 32, 2, SSD1306_WHITE);
@@ -285,7 +284,7 @@ void Display::coolDown(float (*getTemp)(void), Controll controll)
   }
 }
 
-void Display::completed(Controll controll)
+void Display::completed(buttons_state_t(*getButtonsState)(void))
 {
   // Update Display
   led.clearDisplay();
@@ -302,7 +301,7 @@ void Display::completed(Controll controll)
   led.display();
 
   // Wait to return on any button press
-  while (controll.getButtonsState() == BUTTONS_NO_PRESS)
+  while (getButtonsState() == BUTTONS_NO_PRESS)
   {
   }
 }

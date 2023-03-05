@@ -1,8 +1,10 @@
 #pragma once
+
+#include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <controll.h>
 #include <preference.h>
-#include <helpers.h>
+
 
 #define MAX_RESISTANCE 10.0
 // Screen Definitions
@@ -77,18 +79,18 @@ class Display
 
 public:
     void clearMainMenu();
-    void getResistanceFromUser(Preference preference, Controll controll);
+    void getResistanceFromUser(Preference preference, buttons_state_t(*getButtonsState)(void));
     void heatAnimate(int &x, int &y, float v, float t, float target);
     void showHeatMenu(byte max_temp);
     void showMainMenuLeft(int &x, int &y);
     void showMainMenuRight();
-    uint8_t getProfile(Controll controll);
-    void showLogo(void (*doSetup)(void), Controll controll);
-    void coolDown(float (*getTemp)(void), Controll controll);
-    void cancelledTimer(Controll controll);
+    uint8_t getProfile(buttons_state_t(*getButtonsState)(void));
+    void showLogo(void (*doSetup)(void), buttons_state_t(*getButtonsState)(void));
+    void coolDown(float(*getTemp)(void), buttons_state_t(*getButtonsState)(void));
+    void cancelledTimer(buttons_state_t(*getButtonsState)(void));
     void cancelledPB();
-    void completed(Controll controll);
+    void completed(buttons_state_t(*getButtonsState)(void));
 
 private:
-    void Display::displayProfileRight(int8_t cur_profile);
+    void displayProfileRight(int8_t cur_profile);
 };

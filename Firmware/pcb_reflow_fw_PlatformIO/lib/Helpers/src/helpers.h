@@ -1,6 +1,32 @@
 #pragma once
 #include <Arduino.h>
 
+#define BUTTON_PRESS_TIME 50
+
+// Pin Definitions
+#define MOSFET_PIN PIN_PC3
+#define UPSW_PIN PIN_PF3
+#define DNSW_PIN PIN_PD4
+#define TEMP_PIN PIN_PF2 // A2
+#define VCC_PIN PIN_PF4  // A0
+#define LED_GREEN_PIN PIN_PC5
+#define LED_RED_PIN PIN_PC4
+#define ONE_WIRE_BUS PIN_PD5
+
+// These values were derived using a regression from real world data.
+// See the jupyter notebooks for more detail
+#define ANALOG_APPROXIMATION_SCALAR 1.612
+#define ANALOG_APPROXIMATION_OFFSET -20.517
+
+// Voltage Measurement Info
+#define VOLTAGE_REFERENCE 1.5
+
+// temperature must be within this range to move on to next step
+#define TARGET_TEMP_THRESHOLD 2.5
+
+#define MAX_AMPERAGE 5.0
+#define PWM_VOLTAGE_SCALAR 2.0
+
 #define NUM_PROFILES 2
 
 // This needs to be specified or the compiler will fail as you can't initialize
@@ -32,6 +58,8 @@ const static solder_profile_t profiles[NUM_PROFILES] = {
 static byte max_temp_array[] = {140, 150, 160, 170, 180};
 static byte max_temp_index = 0;
 
+static float bed_resistance = 1.88;
+
 enum buttons_state_t
 {
   BUTTONS_NO_PRESS,
@@ -45,6 +73,20 @@ enum single_button_state_t
   BUTTON_RELEASED,
   BUTTON_NO_ACTION
 };
+
+#define MOSFET_PIN_OFF 255
+
+enum menu_state_t
+{
+  MENU_IDLE,
+  MENU_SELECT_PROFILE,
+  MENU_HEAT,
+  MENU_INC_TEMP,
+  MENU_DEC_TEMP
+};
+
+
+
 
 
 
