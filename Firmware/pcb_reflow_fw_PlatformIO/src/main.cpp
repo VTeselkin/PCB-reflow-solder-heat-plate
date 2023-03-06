@@ -29,11 +29,63 @@ Debug debug;
 
 int profile_index = 0;
 
+void mainMenu();
+void doSetup();
 float getTempCallBack();
 void cancelledTimerCallBack();
 buttons_state_t getButtonsStateCallBack();
 void showHeatMenuCallBack(float max_temp);
 void heatAnimateCallBack(int x, int y, float v, float t, float target);
+
+void setup()
+{
+  // Pin Direction control
+  pinMode(MOSFET_PIN, OUTPUT);
+  pinMode(UPSW_PIN, INPUT);
+  pinMode(DNSW_PIN, INPUT);
+  pinMode(TEMP_PIN, INPUT);
+  pinMode(VCC_PIN, INPUT);
+  pinMode(LED_GREEN_PIN, OUTPUT);
+
+  digitalWrite(LED_GREEN_PIN, HIGH);
+  analogWrite(MOSFET_PIN, 255); // VERY IMPORTANT, DONT CHANGE!
+
+  attachInterrupt(DNSW_PIN, controll.dnsw_change_isr, FALLING);
+  attachInterrupt(UPSW_PIN, controll.upsw_change_isr, FALLING);
+
+  debug.setup();
+
+  // Enable Fast PWM with no prescaler
+  analogWriteFrequency(64);
+  analogReference(INTERNAL1V5);
+
+  // Start-up Diplay
+  debugprintln("Showing startup");
+  display.showLogo(doSetup, getButtonsStateCallBack);
+
+  debugprintln("Checking sensors");
+  // check onewire TEMP_PIN sensors
+  heater.setupSensors();
+
+  debugprintln("Checking first boot");
+  if (preference.isFirstBoot() || !preference.validateCRC())
+  {
+    doSetup();
+  }
+
+  // Pull saved values from EEPROM
+  max_temp_index = preference.getMaxTempIndex();
+  bed_resistance = preference.getResistance();
+
+  debugprintln("Entering main menu");
+  // Go to main menu
+  mainMenu();
+}
+
+void loop()
+{
+  // Not used
+}
 
 void mainMenu()
 {
@@ -122,7 +174,7 @@ void mainMenu()
   }
 }
 
-inline void doSetup()
+void doSetup()
 {
   debugprintln("Performing setup");
   // TODO(HEIDT) show an info screen if we're doing firstime setup or if memory
@@ -133,6 +185,8 @@ inline void doSetup()
 
   preference.setFirstBoot();
 }
+
+//----------------------- call back region ---------------------------//
 
 float getTempCallBack()
 {
@@ -158,52 +212,5 @@ void heatAnimateCallBack(int x, int y, float v, float t, float target)
 {
   display.heatAnimate(x, y, v, t, target);
 }
-void setup()
-{
-  // Pin Direction control
-  pinMode(MOSFET_PIN, OUTPUT);
-  pinMode(UPSW_PIN, INPUT);
-  pinMode(DNSW_PIN, INPUT);
-  pinMode(TEMP_PIN, INPUT);
-  pinMode(VCC_PIN, INPUT);
-  pinMode(LED_GREEN_PIN, OUTPUT);
 
-  digitalWrite(LED_GREEN_PIN, HIGH);
-  analogWrite(MOSFET_PIN, 255); // VERY IMPORTANT, DONT CHANGE!
-
-  attachInterrupt(DNSW_PIN, controll.dnsw_change_isr, FALLING);
-  attachInterrupt(UPSW_PIN, controll.upsw_change_isr, FALLING);
-
-  debug.setup();
-
-  // Enable Fast PWM with no prescaler
-  analogWriteFrequency(64);
-  analogReference(INTERNAL1V5);
-
-  // Start-up Diplay
-  debugprintln("Showing startup");
-  display.showLogo(doSetup, getButtonsStateCallBack);
-
-  debugprintln("Checking sensors");
-  // check onewire TEMP_PIN sensors
-  heater.setupSensors();
-
-  debugprintln("Checking first boot");
-  if (preference.isFirstBoot() || !preference.validateCRC())
-  {
-    doSetup();
-  }
-
-  // Pull saved values from EEPROM
-  max_temp_index = preference.getMaxTempIndex();
-  bed_resistance = preference.getResistance();
-
-  debugprintln("Entering main menu");
-  // Go to main menu
-  mainMenu();
-}
-
-void loop()
-{
-  // Not used
-}
+//------------------------------------------------------------------//

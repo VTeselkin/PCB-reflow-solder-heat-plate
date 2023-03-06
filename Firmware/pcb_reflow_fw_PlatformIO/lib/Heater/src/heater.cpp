@@ -2,6 +2,7 @@
 #include <debug.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <SimpleKalmanFilter.h>
 
 // PID values
 float kI = 0.2;
@@ -15,6 +16,8 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 int sensor_count = 0;
 DeviceAddress temp_addresses[3];
+SimpleKalmanFilter tempKalmanFilter(1, 1, 0.01);
+SimpleKalmanFilter voltKalmanFilter(1, 1, 0.01);
 
 bool Heater::heat(void (*showHeatMenu)(float), buttons_state_t (*getButtonsState)(void),
                   void (*cancelledTimer)(void), void (*heatAnimate)(int, int, float, float, float),
@@ -163,10 +166,10 @@ float Heater::getTemp()
   debugprint("Temps: ");
   float t = 0;
   for (byte i = 0; i < 100; i++)
-  { // Poll TEMP_PIN reading 100 times
-    t = t + analogRead(TEMP_PIN);
+  {
+    t = tempKalmanFilter.updateEstimate(analogRead(TEMP_PIN));
   }
-  t /= 100.0;                      // average
+
   t *= VOLTAGE_REFERENCE / 1024.0; // voltage
   // conversion to temp, consult datasheet:
   // https://www.ti.com/document-viewer/LMT85/datasheet/detailed-description#snis1681040
@@ -200,10 +203,8 @@ float Heater::getVolts()
   float v = 0;
   for (byte i = 0; i < 20; i++)
   { // Poll Voltage reading 20 times
-    v = v + analogRead(VCC_PIN);
+    v = voltKalmanFilter.updateEstimate(analogRead(VCC_PIN));
   }
-  v /= 20;
-
   float vin = (v / 1023.0) * 1.5;
   debugprint("voltage at term: ");
   debugprintln(vin);
