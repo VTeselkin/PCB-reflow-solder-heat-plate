@@ -2,6 +2,7 @@
 #include <Arduino.h>
 
 #define BUTTON_PRESS_TIME 50
+#define MOSFET_PIN_OFF 255
 
 // Pin Definitions
 #define MOSFET_PIN PIN_PC3
@@ -49,9 +50,7 @@ struct solder_profile_t
 // cold? profiles pulled from here:
 // https://www.compuphase.com/electronics/reflowsolderprofiles.htm#_
 const static solder_profile_t profiles[NUM_PROFILES] = {
-    {.points = 4,
-     .seconds = {90, 180, 240, 260},
-     .fraction = {.65, .78, 1.00, 1.00}},
+    {.points = 4, .seconds = {90, 180, 240, 260}, .fraction = {.65, .78, 1.00, 1.00}},
     {.points = 2, .seconds = {162.0, 202.0}, .fraction = {.95, 1.00}}};
 
 // Temperature Info
@@ -74,7 +73,7 @@ enum single_button_state_t
   BUTTON_NO_ACTION
 };
 
-#define MOSFET_PIN_OFF 255
+
 
 enum menu_state_t
 {
