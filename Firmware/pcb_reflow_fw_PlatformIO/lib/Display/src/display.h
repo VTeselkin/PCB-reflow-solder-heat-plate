@@ -83,7 +83,7 @@ public:
     void heatAnimate(int &x, int &y, float v, float t, float target);
     void showHeatMenu(byte max_temp);
     void showMainMenuLeft(int &x, int &y);
-    void showMainMenuRight();
+    void showMainMenuRight(int index);
     uint8_t getProfile(buttons_state_t(*getButtonsState)(void));
     void showLogo(void (*doSetup)(void), buttons_state_t(*getButtonsState)(void));
     void coolDown(float(*getTemp)(void), buttons_state_t(*getButtonsState)(void));

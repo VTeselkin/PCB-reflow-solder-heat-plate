@@ -329,12 +329,12 @@ void Display::showMainMenuLeft(int &x, int &y)
   x = (x + 1) % y; // Display change increment and modulus
 }
 
-void Display::showMainMenuRight()
+void Display::showMainMenuRight(int index)
 {
   led.setCursor(95, 6);
   led.print(F("TEMP"));
   led.setCursor(95, 18);
-  led.print(max_temp_array[max_temp_index]);
+  led.print(max_temp_array[index]);
   led.print(F("C"));
   led.display();
 }

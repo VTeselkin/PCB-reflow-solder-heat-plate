@@ -57,7 +57,7 @@ const static solder_profile_t profiles[NUM_PROFILES] = {
 static byte max_temp_array[] = {140, 150, 160, 170, 180};
 static byte max_temp_index = 0;
 
-static float bed_resistance = 1.88;
+static float bed_resistance = 1.38;
 
 enum buttons_state_t
 {

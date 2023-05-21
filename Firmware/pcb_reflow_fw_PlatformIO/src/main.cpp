@@ -170,7 +170,7 @@ void mainMenu()
     display.showMainMenuLeft(x, y);
 
     // Update Display (right-side)
-    display.showMainMenuRight();
+    display.showMainMenuRight(max_temp_index);
   }
 }
 
