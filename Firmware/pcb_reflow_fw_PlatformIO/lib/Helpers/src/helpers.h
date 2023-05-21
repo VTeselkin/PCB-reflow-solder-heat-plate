@@ -20,7 +20,7 @@
 #define ANALOG_APPROXIMATION_OFFSET -20.517
 
 // Voltage Measurement Info
-#define VOLTAGE_REFERENCE 1.5
+#define VOLTAGE_REFERENCE 5.0
 
 // temperature must be within this range to move on to next step
 #define TARGET_TEMP_THRESHOLD 2.5

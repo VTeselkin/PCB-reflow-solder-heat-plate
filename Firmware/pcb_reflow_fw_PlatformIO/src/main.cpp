@@ -57,7 +57,7 @@ void setup()
 
   // Enable Fast PWM with no prescaler
   analogWriteFrequency(64);
-  analogReference(INTERNAL1V5);
+ // analogReference(DEFAULT);
 
   // Start-up Diplay
   debugprintln("Showing startup");

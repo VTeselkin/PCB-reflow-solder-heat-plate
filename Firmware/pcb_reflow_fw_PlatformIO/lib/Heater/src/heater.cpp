@@ -1,8 +1,7 @@
 #include <heater.h>
 #include <debug.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
 #include <SimpleKalmanFilter.h>
+#include <GyverNTC.h>
 
 // PID values
 float kI = 0.2;
@@ -11,13 +10,11 @@ float kP = 8.0;
 float I_clip = 220;
 float error_I = 0;
 
-// Optional temperature sensor
-OneWire oneWire(ONE_WIRE_BUS);
-DallasTemperature sensors(&oneWire);
+GyverNTC therm(ONE_WIRE_BUS, 10000, 3950);
 int sensor_count = 0;
-DeviceAddress temp_addresses[3];
-SimpleKalmanFilter tempKalmanFilter(1, 1, 0.01);
-SimpleKalmanFilter voltKalmanFilter(1, 1, 0.01);
+
+SimpleKalmanFilter tempKalmanFilter(1, 1, 0.1);
+SimpleKalmanFilter voltKalmanFilter(1, 1, 0.1);
 
 bool Heater::heat(void (*showHeatMenu)(float), buttons_state_t (*getButtonsState)(void),
                   void (*cancelledTimer)(void), void (*heatAnimate)(int, int, float, float, float),
@@ -151,61 +148,20 @@ void Heater::evaluate_heat()
 
 void Heater::setupSensors()
 {
-  sensors.begin();
-  sensor_count = sensors.getDeviceCount();
-  debugprint("Looking for sensors, found: ");
-  debugprintln(sensor_count);
-  for (int i = 0; i < min(sensor_count, sizeof(temp_addresses)); i++)
-  {
-    sensors.getAddress(temp_addresses[i], i);
-  }
+  // not used in current version
 }
 
 float Heater::getTemp()
 {
   debugprint("Temps: ");
-  float t = 0;
-  for (byte i = 0; i < 100; i++)
-  {
-    t = tempKalmanFilter.updateEstimate(analogRead(TEMP_PIN));
-  }
-
-  t *= VOLTAGE_REFERENCE / 1024.0; // voltage
-  // conversion to temp, consult datasheet:
-  // https://www.ti.com/document-viewer/LMT85/datasheet/detailed-description#snis1681040
-  // this is optimized for 25C to 150C
-  // TODO(HEIDT) this is linearized and innacurate, could probably use the
-  // nonlinear functions without much overhead.
-  t = (t - 1.365) / ((.301 - 1.365) / (150.0 - 25.0)) + 25.0;
-
-  // The analog sensor is too far from the bed for an accurate reading
-  // this simple function estimates the true bed temperature based off the
-  // thermal gradient
-  float estimated_temp =
-      t * ANALOG_APPROXIMATION_SCALAR + ANALOG_APPROXIMATION_OFFSET;
-  debugprint(estimated_temp);
-  debugprint(" ");
-
-  sensors.requestTemperatures();
-  for (int i = 0; i < sensor_count; i++)
-  {
-    float temp_in = sensors.getTempC(temp_addresses[i]);
-    debugprint(temp_in);
-    debugprint(" ");
-  }
-  debugprintln();
-
-  return max(t, estimated_temp);
+  auto temp = tempKalmanFilter.updateEstimate(therm.getTemp());
+  return temp;
 }
 
 float Heater::getVolts()
 {
-  float v = 0;
-  for (byte i = 0; i < 20; i++)
-  { // Poll Voltage reading 20 times
-    v = voltKalmanFilter.updateEstimate(analogRead(VCC_PIN));
-  }
-  float vin = (v / 1023.0) * 1.5;
+  float v = voltKalmanFilter.updateEstimate(analogRead(VCC_PIN));
+  float vin = (v / 1023.0) * VOLTAGE_REFERENCE;
   debugprint("voltage at term: ");
   debugprintln(vin);
   vin = (vin / 0.090981) + 0.3;
