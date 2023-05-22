@@ -57,7 +57,7 @@ void setup()
 
   // Enable Fast PWM with no prescaler
   analogWriteFrequency(64);
- // analogReference(DEFAULT);
+  // analogReference(DEFAULT);
 
   // Start-up Diplay
   debugprintln("Showing startup");
@@ -104,17 +104,13 @@ void mainMenu()
       display.clearMainMenu();
       buttons_state_t cur_button = controll.getButtonsState();
 
-      if (cur_button == BUTTONS_BOTH_PRESS)
-      {
-        cur_state = MENU_SELECT_PROFILE;
-      }
-      else if (cur_button == BUTTONS_UP_PRESS)
+      if (cur_button == BUTTONS_UP_PRESS)
       {
         cur_state = MENU_INC_TEMP;
       }
       else if (cur_button == BUTTONS_DN_PRESS)
       {
-        cur_state = MENU_DEC_TEMP;
+        cur_state = MENU_SELECT_PROFILE;
       }
     }
     break;
@@ -144,23 +140,16 @@ void mainMenu()
     break;
     case MENU_INC_TEMP:
     {
+      debugprintln("incrementing max temp");
       if (max_temp_index < sizeof(max_temp_array) - 1)
       {
         max_temp_index++;
-        debugprintln("incrementing max temp");
-        preference.setMaxTempIndex(max_temp_index);
       }
-      cur_state = MENU_IDLE;
-    }
-    break;
-    case MENU_DEC_TEMP:
-    {
-      if (max_temp_index > 0)
+      else
       {
-        max_temp_index--;
-        debugprintln("decrementing max temp");
-        preference.setMaxTempIndex(max_temp_index);
+        max_temp_index = 0;
       }
+      preference.setMaxTempIndex(max_temp_index);
       cur_state = MENU_IDLE;
     }
     break;

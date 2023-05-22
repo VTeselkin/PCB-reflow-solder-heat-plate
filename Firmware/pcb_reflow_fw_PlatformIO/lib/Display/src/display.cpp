@@ -104,18 +104,15 @@ uint8_t Display::getProfile(buttons_state_t(*getButtonsState)(void))
     led.print(F("Pick profile"));
     led.drawLine(3, 12, 79, 12, SSD1306_WHITE);
     led.setCursor(3, 14);
-    led.print(F(" UP/DN: cycle"));
+    led.print(F("UP:    cycle"));
     led.setCursor(3, 22);
-    led.print(F(" BOTH: choose"));
+    led.print(F("DOWN: choose"));
     buttons_state_t cur_button = getButtonsState();
-    if (cur_button == BUTTONS_BOTH_PRESS)
+
+    if (cur_button == BUTTONS_DN_PRESS)
     {
-      clearMainMenu();
-      return cur_profile;
-    }
-    else if (cur_button == BUTTONS_DN_PRESS)
-    {
-      cur_profile--;
+     clearMainMenu();
+     return cur_profile;
     }
     else if (cur_button == BUTTONS_UP_PRESS)
     {
@@ -240,11 +237,13 @@ void Display::cancelledPB()
 { // Cancelled via push button
   // Update Display
   led.clearDisplay();
-  led.drawRoundRect(22, 0, 84, 32, 2, SSD1306_WHITE);
-  led.setCursor(25, 4);
-  led.print(F("  CANCELLED"));
+  //led.drawRoundRect(22, 0, 84, 32, 2, SSD1306_WHITE);
+  led.setTextSize(2);
+  led.setCursor(12, 4);
+  led.print(F("CANCELLED"));
+  led.setTextSize(1);
   led.display();
-  delay(2000);
+  delay(5000);
 }
 
 void Display::coolDown(float(*getTemp)(void), buttons_state_t(*getButtonsState)(void))
@@ -311,7 +310,7 @@ void Display::showMainMenuLeft(int &x, int &y)
   if (x < (y * 0.5))
   {
     led.setCursor(3, 4);
-    led.print(F("PRESS BUTTONS"));
+    led.print(F("PRESS: UP"));
     led.drawLine(3, 12, 79, 12, SSD1306_WHITE);
     led.setCursor(3, 14);
     led.print(F(" Change  MAX"));
@@ -321,7 +320,7 @@ void Display::showMainMenuLeft(int &x, int &y)
   else
   {
     led.setCursor(3, 4);
-    led.print(F("HOLD  BUTTONS"));
+    led.print(F("PRESS: DOWN"));
     led.drawLine(3, 12, 79, 12, SSD1306_WHITE);
     led.setCursor(3, 18);
     led.print(F("Begin Heating"));

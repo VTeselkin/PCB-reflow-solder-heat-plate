@@ -81,7 +81,6 @@ enum menu_state_t
   MENU_SELECT_PROFILE,
   MENU_HEAT,
   MENU_INC_TEMP,
-  MENU_DEC_TEMP
 };
 
 
