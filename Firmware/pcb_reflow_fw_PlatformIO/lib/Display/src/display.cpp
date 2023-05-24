@@ -48,7 +48,7 @@ void Display::showLogo(void (*doSetup)(void), buttons_state_t(*getButtonsState)(
 {
   unsigned long start_time = millis();
   led.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
-  while (start_time + 2000 > millis())
+  while (start_time + 5000 > millis())
   {
     led.clearDisplay();
     led.setTextSize(1);

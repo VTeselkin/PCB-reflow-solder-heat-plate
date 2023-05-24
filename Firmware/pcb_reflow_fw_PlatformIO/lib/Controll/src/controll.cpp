@@ -62,10 +62,29 @@ void Controll::dnsw_change_isr()
 {
   dn_button_state = BUTTON_PRESSED;
   down_state_change_time = millis();
+  setLedState(LED_GREED, true);
+  setLedState(LED_GREED, false);
 }
 
 void Controll::upsw_change_isr()
 {
   up_button_state = BUTTON_PRESSED;
   up_state_change_time = millis();
+  setLedState(LED_GREED, true);
+  setLedState(LED_GREED, false);
+}
+
+void Controll::setLedState(led_state_t led, bool state)
+{
+  switch (led)
+  {
+  case LED_RED:
+    digitalWrite(LED_RED_PIN, state);
+    break;
+  case LED_GREED:
+    digitalWrite(LED_GREEN_PIN, state);
+    break;
+  default:
+    break;
+  }
 }

@@ -46,8 +46,13 @@ void setup()
   pinMode(TEMP_PIN, INPUT);
   pinMode(VCC_PIN, INPUT);
   pinMode(LED_GREEN_PIN, OUTPUT);
+  pinMode(LED_RED_PIN, OUTPUT);
 
-  digitalWrite(LED_GREEN_PIN, HIGH);
+  digitalWrite(LED_GREEN_PIN, LOW);
+  digitalWrite(LED_RED_PIN, LOW);
+
+  controll.setLedState(LED_GREED, true);
+
   analogWrite(MOSFET_PIN, 255); // VERY IMPORTANT, DONT CHANGE!
 
   attachInterrupt(DNSW_PIN, controll.dnsw_change_isr, FALLING);
@@ -102,6 +107,8 @@ void mainMenu()
     case MENU_IDLE:
     {
       display.clearMainMenu();
+      controll.setLedState(LED_GREED, false);
+      controll.setLedState(LED_RED, false);
       buttons_state_t cur_button = controll.getButtonsState();
 
       if (cur_button == BUTTONS_UP_PRESS)
@@ -123,17 +130,23 @@ void mainMenu()
     break;
     case MENU_HEAT:
     {
+      controll.setLedState(LED_RED, true);
+      controll.setLedState(LED_GREED, false);
       if (!heater.heat(showHeatMenuCallBack, getButtonsStateCallBack,
                        cancelledTimerCallBack, heatAnimateCallBack,
                        max_temp_array[max_temp_index], profile_index))
       {
         display.cancelledPB();
         display.coolDown(getTempCallBack, getButtonsStateCallBack);
+        controll.setLedState(LED_RED, false);
+        controll.setLedState(LED_GREED, true);
       }
       else
       {
         display.coolDown(getTempCallBack, getButtonsStateCallBack);
         display.completed(getButtonsStateCallBack);
+        controll.setLedState(LED_RED, false);
+        controll.setLedState(LED_GREED, false);
       }
       cur_state = MENU_IDLE;
     }

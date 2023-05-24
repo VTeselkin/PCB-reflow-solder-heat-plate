@@ -73,8 +73,6 @@ enum single_button_state_t
   BUTTON_NO_ACTION
 };
 
-
-
 enum menu_state_t
 {
   MENU_IDLE,
@@ -83,10 +81,10 @@ enum menu_state_t
   MENU_INC_TEMP,
 };
 
-
-
-
-
+enum led_state_t{
+  LED_GREED,
+  LED_RED
+};
 
 class Helpers
 {
