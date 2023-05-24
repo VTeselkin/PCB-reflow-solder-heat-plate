@@ -6,7 +6,7 @@ The PCB reflow solder heat plate can be used to solder small PCBs with SMD parts
 
 ## Hardware design
 
-The idea for this design comes from https://github.com/AfterEarthLTD/Solder-Reflow-Plate. But when I checked the original design, I found some issues that could cause safety problems and other design choices that are not optimal.
+The idea for this design comes from https://github.com/DerSpatz/PCB-reflow-solder-heat-plate. This project is a logical continuation and development of the original idea of PCB reflow solder heat plate.
 
 ### Feature list
 
@@ -24,8 +24,9 @@ The idea for this design comes from https://github.com/AfterEarthLTD/Solder-Refl
 - dual buttons
 - status LED
 - 0.91" OLED display
-- LMT85 analog temperature sensor as main sensor
-- option to add additional digital sensors for calibration purposes
+- temperature measurement through NTC thermistor 3950 10k
+- optimization of control, refusal of double pressing of buttons
+- change R10 from 4K7 to 10K
 
 ### Building your own
 
