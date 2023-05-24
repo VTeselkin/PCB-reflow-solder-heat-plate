@@ -73,13 +73,6 @@ JCM from the Discord explained the process pretty good:
 > 10. Temporarily disable auto reset for the Arduino Nano: https://playground.arduino.cc/Main/DisablingAutoResetOnSerialConnection/ (not sure if it's needed for the Nano, it was for my Mega)
 > 11. Select Sketch > Upload using Programmer (normal Upload will not work)
 
-## Thanks
-
-Special Thanks go out to:
-
-Nathan Heidt for writing the software and testing
-
-Merlin Shaw (www.facebook.com/GeekIslandGaming) for ordering the first batch of prototypes and testing
 
 ![heatplate PCB front](https://github.com/DerSpatz/PCB-reflow-solder-heat-plate/blob/main/Heatplate_v1.1/renders/Heatplate_v1.1_front.png)
 ![heatplate PCB back](https://github.com/DerSpatz/PCB-reflow-solder-heat-plate/blob/main/Heatplate_v1.1/renders/Heatplate_v1.1_back.png)
